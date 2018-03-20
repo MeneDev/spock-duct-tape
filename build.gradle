@@ -1,0 +1,17 @@
+group 'de.menedev.spock'
+version '0.1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.5.0-beta-3'
+    compile 'org.spockframework:spock-core:1.1-groovy-2.4-rc-4'
+    compile 'org.rnorth.duct-tape:duct-tape:1.0.6'
+
+    testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.6.1'
+    testCompile 'org.jetbrains:annotations:15.0'
+}

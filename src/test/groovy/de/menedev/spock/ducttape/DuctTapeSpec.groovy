@@ -15,35 +15,6 @@ import spock.lang.Specification
 import java.util.concurrent.TimeUnit
 
 class DuctTapeSpec extends Specification {
-
-    def createGroovyShell() {
-        def cc = new CompilerConfiguration()
-        def imports = new ImportCustomizer()
-        imports.addImports(Unreliables.canonicalName)
-        imports.addImports(DuctTape.canonicalName)
-        imports.addImports(Specification.canonicalName)
-        imports.addImports(SpockTransform.canonicalName)
-        imports.addImports(TimeUnit.canonicalName)
-        cc.addCompilationCustomizers(imports)
-        def classLoader = new GroovyClassLoader()
-        def s = new GroovyShell(classLoader, cc)
-        return s
-    }
-
-    List<Failure> runTests(@Language("Groovy") String specString) {
-        def s = createGroovyShell()
-        s.parse(specString)
-
-        def notifier = new RecordingRunNotifier()
-        def loadedClasses = s.classLoader.loadedClasses
-        loadedClasses.findAll {
-            Specification.isAssignableFrom(it)
-        }.each {
-            new Sputnik(it).run(notifier)
-        }
-        return notifier.testFailures
-    }
-
     def "retryUntilTrue 1 == 1 with timeout"() {
         when:
         def failures = runTests("""
@@ -80,7 +51,7 @@ class DuctTapeSpec extends Specification {
         failures
                 .collect { it.exception as SpockComparisonFailure }
                 .findAll {
-            it.actual.trim() == "1" &&
+                    it.actual.trim() == "1" &&
                     it.expected.trim() == "2"
         }
     }
@@ -199,6 +170,46 @@ class DuctTapeSpec extends Specification {
         failures.empty
     }
 
+    def "evaluation result of the closure can change to true for retryUntilTrue with timeout error case"() {
+        when:
+        def failures = runTests("""
+        import java.util.concurrent.CountDownLatch
+        
+        @DuctTape
+        class TestSpec extends Specification {
+            def "pandas will rule the word eventually"() {
+                given: "humans ruling the world"
+                def rulers = "humans"
+                def historyOfRulers = ["dinosaurs"]
+                
+                def firstSampleDrawn = new CountDownLatch(1)
+                
+                when: "sloths take over"
+                new Thread({
+                    firstSampleDrawn.await()
+                    rulers = "sloths"
+                }).start()
+        
+                then: "pandas are the rulers now, but they have records of formally ruling races including the humans"
+                Unreliables.retryUntilTrue(2, TimeUnit.SECONDS, {
+                    historyOfRulers << rulers
+                    firstSampleDrawn.countDown()
+                    "humans" in historyOfRulers
+                    rulers == "pandas"
+                })
+            } 
+        }
+        """)
+
+        then:
+        failures
+                .collect { it.exception as SpockComparisonFailure }
+                .findAll {
+                    it.actual.trim() == "sloths" &&
+                    it.expected.trim() == "pandas"
+        }
+    }
+
     def "evaluation result of the closure can change to true for retryUntilTrue with timeout"() {
         when:
         def failures = runTests("""
@@ -300,4 +311,32 @@ class DuctTapeSpec extends Specification {
         failures[1].exception.expected.trim() == "2"
     }
 
+
+    def createGroovyShell() {
+        def cc = new CompilerConfiguration()
+        def imports = new ImportCustomizer()
+        imports.addImports(Unreliables.canonicalName)
+        imports.addImports(DuctTape.canonicalName)
+        imports.addImports(Specification.canonicalName)
+        imports.addImports(SpockTransform.canonicalName)
+        imports.addImports(TimeUnit.canonicalName)
+        cc.addCompilationCustomizers(imports)
+        def classLoader = new GroovyClassLoader()
+        def s = new GroovyShell(classLoader, cc)
+        return s
+    }
+
+    List<Failure> runTests(@Language("Groovy") String specString) {
+        def s = createGroovyShell()
+        s.parse(specString)
+
+        def notifier = new RecordingRunNotifier()
+        def loadedClasses = s.classLoader.loadedClasses
+        loadedClasses.findAll {
+            Specification.isAssignableFrom(it)
+        }.each {
+            new Sputnik(it).run(notifier)
+        }
+        return notifier.testFailures
+    }
 }

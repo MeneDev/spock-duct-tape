@@ -15,7 +15,7 @@ def "pandas will rule the word eventually"() {
     def rulers = "humans"
     def historyOfRulers = ["dinosaurs"]
 
-    def firstSampleDrawn = new CountDownLatch(1)
+    def firstSampleDrawn = new CountDownLatch(3)
 
     when: "pandas take over"
     new Thread({
@@ -26,11 +26,19 @@ def "pandas will rule the word eventually"() {
     then: "falsely believe humans are still the rulers"
     Unreliables.retryUntilTrue(2, TimeUnit.SECONDS, {
         historyOfRulers << rulers
+        
+        // we need to call this 3 times before
+        // firstSampleDrawn.await() stops blocking
+        // and the pandas take over
         firstSampleDrawn.countDown()
         
         // All conditions are evaluated, just like Spock 
         "humans" in historyOfRulers
         rulers == "humans"
+        
+        // Beware: do not add logic here (e.g. a sleep)
+        // Failing conditions will throw an Exception
+        // so nothing below will be executed
     })
 }
 ```

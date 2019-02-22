@@ -214,7 +214,7 @@ class SpockDuctTapeClassCodeVisitor extends ClassCodeVisitorSupport implements I
             def line = arguments[3] as ConstantExpression
             def column = arguments[4] as ConstantExpression
             def message = arguments[5] as ConstantExpression
-            def target = arguments[6] as ClassExpression
+            def target = unwrapTarget(arguments[6]) as ClassExpression
             def method = arguments[7] as MethodCallExpression
             def args = arguments[8] as ArrayExpression
             def safe = arguments[9] as MethodCallExpression
@@ -280,6 +280,27 @@ class SpockDuctTapeClassCodeVisitor extends ClassCodeVisitorSupport implements I
             // this is not a verifyMethodCondition we're looking for, but maybe there is one beneath.
             super.visitMethodCallExpression(call)
         }
+    }
+
+    def unwrapTarget(Expression it) {
+        if (it instanceof MethodCallExpression) {
+            def objectExpression = it.objectExpression
+            assert objectExpression instanceof VariableExpression
+            assert objectExpression.getName() == '$spock_valueRecorder'
+            def method = it.method
+            assert method instanceof ConstantExpression
+            assert method.getValue() == "record"
+
+            def args = it.arguments as ArgumentListExpression
+            return args[1]
+
+            // spock 1.3
+        } else {
+            // before spock 1.3
+            return it
+        }
+
+        it as MethodCallExpression
     }
 
     /**

@@ -65,7 +65,7 @@ repositories {
 }
 
 dependencies {
-    testCompile 'com.github.MeneDev:spock-duct-tape:6daea6d26b'
+    testCompile 'com.github.MeneDev:spock-duct-tape:194fdf199f'
 }
 ```
 

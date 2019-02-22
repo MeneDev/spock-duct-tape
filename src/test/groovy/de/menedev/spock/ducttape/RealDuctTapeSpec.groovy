@@ -34,7 +34,7 @@ class RealDuctTapeSpec extends Specification {
 
     @PendingFeature(/*remove to fail*/)
     @DuctTape
-    def "pandas will rule the word eventually with"() {
+    def "pandas will rule the word eventually with annotation"() {
         given: "humans ruling the world"
         def rulers = "humans"
         def historyOfRulers = ["dinosaurs"]

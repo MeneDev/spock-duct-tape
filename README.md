@@ -8,7 +8,7 @@ Just add the `@DuctTape` Annotation to your Feature or Specification:
 
 ```groovy
 @DuctTape
-def "pandas will rule the word eventually with"() {
+def "pandas will rule the word eventually with annotation"() {
     given: "humans ruling the world"
     def rulers = "humans"
     def historyOfRulers = ["dinosaurs"]

@@ -254,14 +254,14 @@ class SpockDuctTapeClassCodeVisitor extends ClassCodeVisitorSupport implements I
                 try {
                     def tryCatchStatement = it as TryCatchStatement
                     BlockStatement tryBlockStatement = self.toBlockStatement(tryCatchStatement.tryStatement, parentScope)
-                    tryBlockStatement.statements.add(new ExpressionStatement(new MethodCallExpression(lastException, "complete", new ArgumentListExpression(new ConstantExpression(null)))))
+                    tryBlockStatement.statements.add(new ExpressionStatement(new MethodCallExpression(lastException, "obtrudeValue", new ArgumentListExpression(new ConstantExpression(null)))))
 
                     def scope = new VariableScope(parentScope)
                     List<Statement> catchStatements = []
 
                     // here we catch the exception that happens when a condition is not satisfied
                     // those will be of type class org.spockframework.runtime.ConditionNotSatisfiedError
-                    catchStatements.add(new ExpressionStatement(new MethodCallExpression(lastException, "complete", new ArgumentListExpression(new VariableExpression(tryCatchStatement.catchStatements[0].variable)))))
+                    catchStatements.add(new ExpressionStatement(new MethodCallExpression(lastException, "obtrudeValue", new ArgumentListExpression(new VariableExpression(tryCatchStatement.catchStatements[0].variable)))))
                     catchStatements.add(new ReturnStatement(new ConstantExpression(false)))
 
                     tryCatchStatement.catchStatements[0].code = new BlockStatement(catchStatements, scope)

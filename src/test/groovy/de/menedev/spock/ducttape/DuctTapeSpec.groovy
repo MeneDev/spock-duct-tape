@@ -182,18 +182,19 @@ class DuctTapeSpec extends Specification {
                 def rulers = "humans"
                 def historyOfRulers = ["dinosaurs"]
                 
-                def firstSampleDrawn = new CountDownLatch(1)
+                def someSamplesDrawn = new CountDownLatch(3)
                 
                 when: "sloths take over"
                 new Thread({
-                    firstSampleDrawn.await()
+                    someSamplesDrawn.await()
+                    Thread.sleep(50)
                     rulers = "sloths"
                 }).start()
         
                 then: "pandas are the rulers now, but they have records of formally ruling races including the humans"
                 Unreliables.retryUntilTrue(2, TimeUnit.SECONDS, {
                     historyOfRulers << rulers
-                    firstSampleDrawn.countDown()
+                    someSamplesDrawn.countDown()
                     "humans" in historyOfRulers
                     rulers == "pandas"
                 })
@@ -222,18 +223,19 @@ class DuctTapeSpec extends Specification {
                 def rulers = "humans"
                 def historyOfRulers = ["dinosaurs"]
                 
-                def firstSampleDrawn = new CountDownLatch(1)
+                def someSamplesDrawn = new CountDownLatch(3)
                 
                 when: "pandas take over"
                 new Thread({
-                    firstSampleDrawn.await()
+                    someSamplesDrawn.await()
+                    Thread.sleep(50)
                     rulers = "pandas"
                 }).start()
         
                 then: "pandas are the rulers now, but they have records of formally ruling races including the humans"
                 Unreliables.retryUntilTrue(2, TimeUnit.SECONDS, {
                     historyOfRulers << rulers
-                    firstSampleDrawn.countDown()
+                    someSamplesDrawn.countDown()
                     "humans" in historyOfRulers
                     rulers == "pandas"
                 })
@@ -257,18 +259,23 @@ class DuctTapeSpec extends Specification {
                 def rulers = "humans"
                 def historyOfRulers = ["dinosaurs"]
                 
-                def firstSampleDrawn = new CountDownLatch(1)
+                def someSampleDrawn = new CountDownLatch(3)
                 
                 when: "pandas take over"
                 new Thread({
-                    firstSampleDrawn.await()
+                    someSampleDrawn.await()
+                    Thread.sleep(50)
                     rulers = "pandas"
                 }).start()
         
                 then: "pandas are the rulers now, but they have records of formally ruling races including the humans"
-                Unreliables.retryUntilTrue(10, {
+                Unreliables.retryUntilTrue(200, {
+                println "Is this executed?"
                     historyOfRulers << rulers
-                    firstSampleDrawn.countDown()
+                    someSampleDrawn.countDown()
+                    // NOTE: the first failing condition throws an Exception
+                    // so we should insert a sleep here
+                    Thread.sleep(50)
                     "humans" in historyOfRulers
                     rulers == "pandas"
                 })
